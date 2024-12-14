@@ -1,0 +1,39 @@
+{
+  "musics": [
+    {
+      "title": "Love Me Again",
+      "artists": ["V (feat. 아이유(IU) cover)"],
+      "cover": "Layover.png",
+      "source": "https://myplaylist.s3.us-east-1.amazonaws.com/Love+Me+Again+-+IU.mp3",
+      "vote": 300000
+    },
+    {
+      "title": "사계",
+      "artists": ["태연"],
+      "cover": "Four Seasons.png",
+      "source": "https://myplaylist.s3.us-east-1.amazonaws.com/073.+%ED%83%9C%EC%97%B0+-+%EC%82%AC%EA%B3%84+(Four+Seasons).mp3",
+      "vote": 123987
+    },
+    {
+      "title": "2002",
+      "artists": ["Anne Marie"],
+      "cover": "2002.png",
+      "source": "https://myplaylist.s3.us-east-1.amazonaws.com/037.+Anne+Marie+-+2002.mp3",
+      "vote": 479805
+    },
+    {
+      "title": "밤편지",
+      "artists": ["아이유(IU)"],
+      "cover": "nightlater.png",
+      "source": "https://myplaylist.s3.us-east-1.amazonaws.com/030.%EB%B0%A4%ED%8E%B8%EC%A7%80-%EC%95%84%EC%9D%B4%EC%9C%A0+(IU).mp3",
+      "vote": 3452
+    },
+    {
+      "title": "아무노래",
+      "artists": ["지코"],
+      "cover": "zico.png",
+      "source": "https://myplaylist.s3.us-east-1.amazonaws.com/001.+%EC%A7%80%EC%BD%94+(ZICO)-01-%EC%95%84%EB%AC%B4%EB%85%B8%EB%9E%98.mp3",
+      "vote": 39457
+    }
+  ]
+}
