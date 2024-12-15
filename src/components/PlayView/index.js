@@ -1,73 +1,198 @@
-import React, { useState } from 'react';  // React와 useState 훅을 import
-import styled from 'styled-components';  // styled-components를 import (CSS-in-JS)
-import Album from '../Album';  // Album 컴포넌트를 import (음악 항목을 표시하는 컴포넌트)
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { onCalcMusic } from '../../utils/calcMusicTime';
 
 const Wrap = styled.div`
-  width: 100%;  // Wrap 컴포넌트의 너비를 100%로 설정
-  height: 100vh;  // Wrap 컴포넌트의 높이를 100vh로 설정 (전체 화면 높이)
-  padding-top: 20px;  // 상단에 20px의 여백 추가
+  width: 100%;
+  height: 100vh;
+  padding-top: 30px;
+  z-index: 8;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  background-color: black;
+  transform: ${({ onPlayView }) =>
+    onPlayView ? 'translateX(0)' : 'translateX(-3000px)'};
+  transition: transform 2s ease-in-out;
 `;
 
-const Header = styled.div`
-  width: 100%;  // Header 컴포넌트의 너비를 100%로 설정
-  height: 10%;  // Header의 높이를 화면의 10%로 설정
-  background-color: ${({ theme }) => theme.colors.black};  // 배경색은 테마에서 제공된 black
-  color: white;  // 텍스트 색은 흰색
-  text-transform: uppercase;  // 텍스트를 대문자로 변환
-  font-size: ${({ theme }) => theme.fonts.size.base};  // 폰트 크기는 테마의 base 크기 사용
-  font-weight: 500;  // 폰트 두께는 500
-  display: flex;  // flexbox를 사용하여 내부 정렬
-  align-items: center;  // 수직 중앙 정렬
-  justify-content: center;  // 수평 중앙 정렬
-`;
-
-const PlaylistWrap = styled.div``;  // PlaylistWrap 컴포넌트는 특별한 스타일이 없음
-const PlaylistUl = styled.ul``;  // PlaylistUl 컴포넌트는 특별한 스타일이 없음
-const PlaylistLi = styled.li`
-  height: 8rem;  // 각 리스트 항목의 높이를 8rem으로 설정
-  display: flex;  // flexbox로 항목을 정렬
-  justify-content: space-between;  // 항목들 사이의 간격을 자동으로 배분
-  align-items: center;  // 수직 중앙 정렬
-  margin: 0 1.5rem;  // 좌우 마진을 1.5rem로 설정
-  padding: 0 0.5rem;  // 좌우 패딩을 0.5rem으로 설정
-  &:not(:last-child) {  // 마지막 항목이 아닌 경우
-    border-bottom: 1px solid ${({ theme }) => theme.colors.gray7};  // 아래쪽에 회색 테두리 추가
+const Nav = styled.div`
+  width: 100%;
+  height: 8%;
+  padding: 2%;
+  button {
+    width: 5rem;
+    height: 5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
-`;
-
-const PlaySetting = styled.div`
   i {
-    font-size: 2rem;  // 아이콘의 폰트 크기를 2rem으로 설정
+    font-size: 2.7rem;
+    color: ${({ theme }) => theme.colors.gray3};
   }
 `;
 
-function Playlist({ playlist, onRemovePlaylist }) {
-  const [list, setList] = useState(playlist);  // playlist 상태를 관리 (초기값은 부모 컴포넌트로부터 전달받은 playlist)
+const Album = styled.div`
+  width: 100%;
+  height: 62%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  img {
+    width: 27rem;
+    height: 27rem;
+    border-radius: 1.5rem;
+  }
+  img + span {
+    font-weight: 500;
+    line-height: 21px;
+    margin: 4rem 0 0.5rem 0;
+  }
+  span ~ span {
+    color: ${({ theme }) => theme.colors.gray3};
+  }
+`;
 
-  const onRemove = (music) => {
-    // 음악을 제거하는 함수
-    setList((pre) => pre.filter((v) => v.title !== music.title));  // 현재 리스트에서 해당 음악을 제거
-    music.isOnList = false;  // 음악 객체에서 isOnList 속성을 false로 설정
-    onRemovePlaylist(music);  // 부모 컴포넌트에 음악을 제거하라고 알림
+const PlayZone = styled.div`
+  width: 100%;
+  height: 33%;
+  background-color: white;
+`;
+
+const PlayButtons = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  height: 50%;
+  padding: 3rem;
+
+  .btn-icons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .btn-play {
+      margin: 0 2rem;
+      i {
+        font-size: 6.5rem;
+        color: ${({ theme }) => theme.colors.pink};
+      }
+    }
+  }
+
+  i {
+    font-size: 3rem;
+    color: ${({ theme }) => theme.colors.gray7};
+
+    &:hover {
+      color: ${({ theme }) => theme.colors.gray3};
+    }
+  }
+`;
+
+const PlayScrollZone = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  height: 50%;
+
+  .progress-time {
+    display: flex;
+    width: 85%;
+    height: 40%;
+    justify-content: space-between;
+    align-items: center;
+    span {
+      font-size: ${({ theme }) => theme.fonts.size.sm};
+      color: ${({ theme }) => theme.colors.gray6};
+      opacity: 0.7;
+    }
+    span:first-child {
+      color: ${({ theme }) => theme.colors.pink};
+    }
+  }
+`;
+
+function PlayView({
+  audio,
+  music,
+  onPlay,
+  setOnPlay,
+  onPlayView,
+  setOnPlayView,
+}) {
+  const [currentTime, setCurrentTime] = useState('0:00');
+  const [duration, setDuration] = useState('0:00');
+
+  const onForward = () => {
+    if (audio.currentTime + 10 > audio.duration) {
+      audio.currentTime = audio.duration;
+    } else {
+      audio.currentTime += 10;
+    }
   };
 
+  const onBackward = () => {
+    if (audio.currentTime - 10 < 0) {
+      audio.currentTime = 0;
+    } else {
+      audio.currentTime -= 10;
+    }
+  };
+
+  useEffect(() => {
+    audio.addEventListener('timeupdate', () => {
+      const audDuration = onCalcMusic(audio.duration);
+      const audCurrent = onCalcMusic(audio.currentTime);
+      setDuration(audDuration);
+      setCurrentTime(audCurrent);
+    });
+  }, [audio]);
+
   return (
-    <Wrap> 
-      <Header>My playlist</Header> 
-      <PlaylistWrap>
-        <PlaylistUl>
-          {list.map((music, idx) => (  // 리스트의 각 음악 항목을 반복
-            <PlaylistLi key={idx}>  
-              <Album music={music} />  
-              <PlaySetting onClick={() => onRemove(music)}>  
-                <i className="xi-minus-thin" /> 
-              </PlaySetting>
-            </PlaylistLi>
-          ))}
-        </PlaylistUl>
-      </PlaylistWrap>
+    <Wrap onPlayView={onPlayView}>
+      <Nav>
+        <button onClick={() => setOnPlayView(false)}>
+          <i className="xi-arrow-left" />
+        </button>
+      </Nav>
+      <Album>
+        <img src={music.cover} alt="on play album cover" />
+        <span>{music.title}</span>
+        <span>{music.artists}</span>
+      </Album>
+      <PlayZone>
+        <PlayButtons>
+          <span className="btn-icons">
+            <button onClick={onBackward}>
+              <i className="xi-backward" />
+            </button>
+
+            <button
+              className="btn-play"
+              onClick={() => (onPlay ? setOnPlay(false) : setOnPlay(true))}
+            >
+              <i className={`xi-${onPlay ? 'pause' : 'play'}`} />
+            </button>
+
+            <button onClick={onForward}>
+              <i className="xi-forward" />
+            </button>
+          </span>
+        </PlayButtons>
+        <PlayScrollZone>
+          <div className="progress-time">
+            <span>{currentTime}</span>
+            <span>{duration}</span>
+          </div>
+        </PlayScrollZone>
+      </PlayZone>
     </Wrap>
   );
 }
 
-export default Playlist;  // Playlist 컴포넌트를 내보냄
+export default PlayView;
