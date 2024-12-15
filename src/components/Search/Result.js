@@ -72,18 +72,19 @@ const PlaySetting = styled.div`
   }
 `;
 
-// Search 컴포넌트: 검색 화면의 주요 기능 및 렌더링
 function Search({
-  musics, // 음악 목록
-  handlePlayMusic, // 음악 재생 핸들러
-  onAddPlaylist, // 재생목록 추가 핸들러
-  onRemovePlaylist, // 재생목록 제거 핸들러
-  onPlay, // 현재 재생 상태
-  setOnPlay, // 재생 상태 업데이트 함수
-  current, // 현재 재생 중인 음악
+  musics,
+  handlePlayMusic,
+  onAddPlaylist,
+  onRemovePlaylist,
+  onPlay,
+  setOnPlay,
+  current,
 }) {
-  const [list, setList] = useState([]); // 검색 결과를 저장할 상태
-  const [value, setValue] = useState(''); // 검색어를 저장할 상태
+  const [list, setList] = useState([]);
+  const [value, setValue] = useState('');
+}
+
 
   // 검색어 입력 시 상태 업데이트
   const onChange = (e) => {
