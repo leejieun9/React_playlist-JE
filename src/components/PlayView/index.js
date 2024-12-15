@@ -33,7 +33,6 @@ const Nav = styled.div`
     color: ${({ theme }) => theme.colors.gray3};
   }
 `;
-
 const Album = styled.div`
   width: 100%;
   height: 62%;
@@ -55,7 +54,6 @@ const Album = styled.div`
     color: ${({ theme }) => theme.colors.gray3};
   }
 `;
-
 const PlayZone = styled.div`
   width: 100%;
   height: 33%;
@@ -77,7 +75,7 @@ const PlayButtons = styled.div`
       margin: 0 2rem;
       i {
         font-size: 6.5rem;
-        color: ${({ theme }) => theme.colors.pink};
+       color: ${({ theme }) => theme.colors.pink} 
       }
     }
   }
@@ -90,6 +88,10 @@ const PlayButtons = styled.div`
       color: ${({ theme }) => theme.colors.gray3};
     }
   }
+  .xi-shuffle.active,
+  .xi-redo.active {
+    color: ${({ theme }) => theme.colors.gray3};
+  }
 `;
 
 const PlayScrollZone = styled.div`
@@ -99,6 +101,33 @@ const PlayScrollZone = styled.div`
   justify-content: flex-start;
   width: 100%;
   height: 50%;
+
+  input[type='range'] {
+    width: 85%;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    height: 0.5rem;
+    outline: none;
+      background-color: ${({ theme }) => theme.colors.gray7};
+    border: none;
+    transition: all 450ms ease-in-out;
+  }
+
+  input[type='range']:focus {
+    outline: none;
+  }
+
+  input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 1.2rem;
+    height: 1.2rem;
+    background: ${({ theme }) => theme.colors.pink}; 
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+  }
+    
 
   .progress-time {
     display: flex;
@@ -125,9 +154,22 @@ function PlayView({
   onPlayView,
   setOnPlayView,
 }) {
+  const [onRandom, setRandom] = useState(false);
+  const [onRepeat, setRepeat] = useState(false);
+  const [rangeValue, setRange] = useState(0);
   const [currentTime, setCurrentTime] = useState('0:00');
   const [duration, setDuration] = useState('0:00');
 
+  const onChangeProgress = (e) => {
+    const rangeValue = e.target.value;
+    audio.currentTime = (rangeValue / 1000) * audio.duration;
+    setRange(rangeValue);
+  };
+//사용자가 진행 바를드래그하면 음악의 위치를 변경하는 기능
+  const toggleList = (command) => {
+    command === 'random' ? setRandom((pre) => !pre) : setRepeat((pre) => !pre);
+  };
+//랜덤 재생과 반복 재생을 토글하는 기능을 수행합니다.
   const onForward = () => {
     if (audio.currentTime + 10 > audio.duration) {
       audio.currentTime = audio.duration;
@@ -143,15 +185,18 @@ function PlayView({
       audio.currentTime -= 10;
     }
   };
-
+//이 두 함수는 음악을 10초씩 앞으로 또는 뒤로 이동시키는 기능입니다.
   useEffect(() => {
     audio.addEventListener('timeupdate', () => {
       const audDuration = onCalcMusic(audio.duration);
       const audCurrent = onCalcMusic(audio.currentTime);
       setDuration(audDuration);
       setCurrentTime(audCurrent);
+      setRange((audio.currentTime / audio.duration) * 1000);
     });
   }, [audio]);
+ 
+  // 음악이 재생되면서 현재 시간과 진행상태를 업데이트해주는 역할
 
   return (
     <Wrap onPlayView={onPlayView}>
@@ -167,6 +212,12 @@ function PlayView({
       </Album>
       <PlayZone>
         <PlayButtons>
+          <span className="btn-icons random">
+            <button onClick={() => toggleList('random')}>
+              <i className={`xi-shuffle ${onRandom ? 'active' : ''}`} />
+            </button>
+          </span>
+
           <span className="btn-icons">
             <button onClick={onBackward}>
               <i className="xi-backward" />
@@ -177,14 +228,33 @@ function PlayView({
               onClick={() => (onPlay ? setOnPlay(false) : setOnPlay(true))}
             >
               <i className={`xi-${onPlay ? 'pause' : 'play'}`} />
-            </button>
+            </button> 
 
+            
             <button onClick={onForward}>
               <i className="xi-forward" />
             </button>
           </span>
+          <span className="btn-icons redo">
+            <button onClick={() => toggleList('repeat')}>
+              <i
+                className={`xi-redo xi-flip-horizontal ${
+                  onRepeat ? 'active' : ''
+                }`}
+              />
+            </button>
+          </span>
         </PlayButtons>
         <PlayScrollZone>
+          <input
+            type="range"
+            min="0"
+            max="1000"
+            value={rangeValue}
+            onChange={(e) => {
+              onChangeProgress(e);
+            }}
+          />
           <div className="progress-time">
             <span>{currentTime}</span>
             <span>{duration}</span>
